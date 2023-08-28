@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Refresh" content="4">
+        <title>The Python' server</title>
+    </head>
+    <body>
+        <p>Username: {1}</p>
+        <form action="send">
+            <input type="text" placeholder="Unesite poruku" name="message" autofocus />
+            <input type="text" name="username" value="{1}" hidden />
+            <br />
+            <br />
+            <input type="submit" />
+        </form>
+
+        <hr />
+        <p>Primljene poruke: </p>
+        <hr />
+
+        {0}
+        
+    </body>
+</html>
