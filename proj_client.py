@@ -26,7 +26,11 @@ def create_client_chat_socket(ip):
 def receive(sock, lock, interl_id):
     global r_pid, en, log_r, inter_load
     local = threading.local()
-    local.log = ""
+    while lock.locked():
+        pass
+    lock.acquire()
+    local.log = log_r
+    lock.release()
     while True:
         local.data, local.addr = sock.recvfrom(2000)
         local.msg = local.data.decode('utf-8')

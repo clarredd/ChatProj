@@ -41,7 +41,6 @@ class TheServer(BaseHTTPRequestHandler):
             self.wfile.write(bytes("<script>location.href='/refresh?username="+args["username"]+"';</script>", "utf-8"))
         elif req_name == "send":
             msgbuffput(args["message"], pids[args["username"]][0])
-            print(args)
             self.wfile.write(bytes("<script>location.href='/refresh?username="+args["username"]+"';</script>", "utf-8"))
         elif req_name == "refresh":
             logg = getlog(pids[args["username"]][1])
