@@ -38,11 +38,11 @@ class TheServer(BaseHTTPRequestHandler):
                 self.wfile.write(file.read())
         elif req_name == "login":
             pids[args["username"]] = cl_init(msgsName, msgsPort, args["username"])
-            print("pids",pids)
             self.wfile.write(bytes("<script>location.href='/refresh?username="+args["username"]+"';</script>", "utf-8"))
         elif req_name == "send":
             msgbuffput(args["message"], pids[args["username"]][0])
-            self.wfile.write(bytes("<script>location.href='/refresh?+username="+args["username"]+"';</script>", "utf-8"))
+            print(args)
+            self.wfile.write(bytes("<script>location.href='/refresh?username="+args["username"]+"';</script>", "utf-8"))
         elif req_name == "refresh":
             logg = getlog(pids[args["username"]][1])
             messages = ""
