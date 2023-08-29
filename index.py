@@ -2,20 +2,26 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from proj_client import main as cl_init, getlog, msgbuffput
 from proj_server import main as msgs_init
 from socket import gethostbyname, gethostname
+from urllib.parse import unquote_plus as unquote
 
 hostName = "127.0.0.1"
 hostPort = 80
 msgsName = gethostbyname(gethostname())
 msgsPort = 1312
 pids = dict()
+box_buff = dict()
 
 class TheServer(BaseHTTPRequestHandler):
+    def showerror(self, err):
+        with open("error.html","r") as file:
+            self.wfile.write(file.read().format(err).encode("utf-8"))
     def do_GET(self):
         if "?" in self.path:
             req_name, argS = self.path.split("?")
             args = dict()
             for arg in argS.split("&"):
                 key, val = arg.split("=")
+                key, val = unquote(key), unquote(val)
                 args[key] = val
         else:
             req_name = self.path
@@ -23,7 +29,7 @@ class TheServer(BaseHTTPRequestHandler):
         
         req_name = req_name.strip("/")
 
-        if req_name in ["", "login", "send", "refresh"]:
+        if req_name in ["", "login", "send", "refresh", "updatedraft"]:
             self.send_response(200)
         else:
             self.send_response(404)
@@ -40,15 +46,16 @@ class TheServer(BaseHTTPRequestHandler):
             if "username" in args.keys():
                 if not(args["username"] in pids.keys()):
                     pids[args["username"]] = cl_init(msgsName, msgsPort, args["username"])
+                    box_buff[args["username"]] = ""
                 self.wfile.write(bytes("<script>location.href='/refresh?username="+args["username"]+"';</script>", "utf-8"))
             else:
-                self.wfile.write(bytes("Username Not Found", "utf-8"))
+                self.showerror("Username Not Found")
         elif req_name == "send":
             if "username" in args.keys() and "message" in args.keys() and args["username"] in pids.keys():
-                msgbuffput(args["message"], pids[args["username"]][0])
+                msgbuffput(args["message"].replace("command","_command"), pids[args["username"]][0])
                 self.wfile.write(bytes("<script>location.href='/refresh?username="+args["username"]+"';</script>", "utf-8"))
             else:
-                self.wfile.write(bytes("Username or Message Not Found", "utf-8"))
+                self.showerror("Username or Message Not Found")
         elif req_name == "refresh":
             if "username" in args.keys() and args["username"] in pids.keys():
                 logg = getlog(pids[args["username"]][1])
@@ -56,11 +63,23 @@ class TheServer(BaseHTTPRequestHandler):
                 for r in logg.split("\n"):
                     messages += "<p>" + r + "</p>"
                 with open("login.html", "r") as file:
-                    self.wfile.write(file.read().format(messages,args["username"]).encode("utf-8"))
+                    self.wfile.write(file.read().format(messages,args["username"],"",box_buff[args["username"]]).encode("utf-8"))
             else:
-                self.wfile.write(bytes("Username Not Found", "utf-8"))
+                self.showerror("Username Not Found")
+        elif req_name == "updatedraft":
+            if "username" in args.keys() and args["username"] in pids.keys() and "draft" in args.keys():
+                box_buff[args["username"]] = args["draft"]
+                self.wfile.write(bytes("<script>location.href='/refresh?username="+args["username"]+"';</script>", "utf-8"))
+            else:
+                self.showerror("Username or Draft Not Found")
+        elif req_name == "command":
+            if "username" in args.keys() and args["username"] in pids.keys() and "message" in args.keys():
+                msgbuffput("command", pids[args["username"]][0])
+                msgbuffput(args["message"], pids[args["username"]][0])
+            else:
+                self.showerror("Username or Command Not Found")
         else:
-            self.wfile.write(bytes("404 Not Found", "utf-8"))
+            self.showerror("404 Not Found")
 
 if __name__ == "__main__":
     msgs_init(msgsPort)

@@ -3,11 +3,25 @@
     <head>
         <meta http-equiv="Refresh" content="7">
         <title>The Python' server</title>
+        <script>
+            var msgBox;
+            this.onload=function(){{
+                msgBox = document.getElementsByName("message")[0];
+                msgBox.selectionStart = msgBox.selectionEnd = msgBox.value.length;
+
+                this.setTimeout(function(){{
+                    var draft = document.getElementsByName("draft")[0];
+                    draft.value = msgBox.value;
+                    var form = document.getElementById("draftForm");
+                    form.submit();
+                }},5000);
+            }};
+        </script>
     </head>
     <body>
         <p>Username: {1}</p>
         <form action="send">
-            <input type="text" placeholder="Unesite poruku" name="message" autofocus />
+            <input type="text" placeholder="Unesite poruku" name="message" autofocus value="{2}" />
             <input type="text" name="username" value="{1}" hidden />
             <br />
             <br />
@@ -20,5 +34,27 @@
 
         {0}
         
+        <br />
+        <br />
+        <hr />
+        <p>Chat akcije</p>
+        <hr />
+
+        <form action="command">
+            <input type="text" name="username" value="{1}" hidden />
+            <input type="text" name="message" placeholder="Unesite komandu" />
+            <br />
+            <br />
+            <input type="submit" />
+        </form>
+
+        <form id ="draftForm" action="updatedraft" hidden>
+            <input type="text" name="username" value="{1}" />
+            <input type="text" name="draft" />
+            <br />
+            <br />
+            <input type="submit" />
+        </form>
+
     </body>
 </html>
