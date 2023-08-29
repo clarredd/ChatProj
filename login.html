@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta http-equiv="Refresh" content="70">
+        <meta http-equiv="Refresh" content="7">
         <title>The Python' server</title>
         <script>
             var msgBox;
@@ -14,7 +14,7 @@
                     draft.value = msgBox.value;
                     var form = document.getElementById("draftForm");
                     form.submit();
-                }},50000);
+                }},5000);
             }};
         </script>
     </head>
@@ -48,9 +48,8 @@
                 <option value="ban">Ban</option>
                 <option value="enter_chat">Enter Chat</option>
                 <option value="list_chats">List Chats</option>
-                <option value="mute">Mute</option>
-                <option value="cool_down">Cool Down</option>
-                <option value="chat_condig">Configure Chat</option>
+                <option value="chat_config">Configure Chat</option>
+                <option value="user_perms">User Permissions</option>
             </select>
             <input type="text" name="message" placeholder="Unesite parametre" />
             <br />
