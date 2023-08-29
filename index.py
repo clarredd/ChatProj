@@ -73,9 +73,10 @@ class TheServer(BaseHTTPRequestHandler):
             else:
                 self.showerror("Username or Draft Not Found")
         elif req_name == "command":
-            if "username" in args.keys() and args["username"] in pids.keys() and "message" in args.keys():
+            if "username" in args.keys() and args["username"] in pids.keys() and "message" in args.keys() and "command" in args.keys():
                 msgbuffput("command", pids[args["username"]][0])
-                msgbuffput(args["message"], pids[args["username"]][0])
+                msgbuffput(args["command"]+" "+args["message"], pids[args["username"]][0])
+                self.wfile.write(bytes("<script>location.href='/refresh?username="+args["username"]+"';</script>", "utf-8"))
             else:
                 self.showerror("Username or Command Not Found")
         else:

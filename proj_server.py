@@ -9,6 +9,7 @@ def receive(sock):
         try:
             data, addr = sock.recvfrom(2000)
             msg = data.decode('utf-8')
+            msg = msg.replace("_command", "command")
             print("msgs",addr, msg)
             if addr not in clients:
                 clients.append(addr)
