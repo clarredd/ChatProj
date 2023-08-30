@@ -44,7 +44,7 @@ class TheServer(BaseHTTPRequestHandler):
                 self.wfile.write(file.read())
         elif req_name == "login":
             if "username" in args.keys():
-                if "]:" in args["username "] or "command" in args["username"]:
+                if "]:" in args["username"] or "command" in args["username"]:
                     self.showerror("That username isn't valid. ")
                 elif not(args["username"] in pids.keys()):
                     pids[args["username"]] = cl_init(msgsName, msgsPort, args["username"])
@@ -56,18 +56,18 @@ class TheServer(BaseHTTPRequestHandler):
                 self.showerror("Username Not Found")
         elif req_name == "send":
             if "username" in args.keys() and "message" in args.keys() and args["username"] in pids.keys():
-                msgbuffput(args["message"].replace("command","_command"), pids[args["username"]][0])
+                msgbuffput(f'[{args["username"]}]: {args["message"].replace("command","_command")}'.encode('utf-8'), pids[args["username"]][0])
                 self.wfile.write(bytes("<script>location.href='/refresh?username="+args["username"]+"';</script>", "utf-8"))
             else:
                 self.showerror("Username or Message Not Found")
         elif req_name == "refresh":
             if "username" in args.keys() and args["username"] in pids.keys():
-                    logg = getlog(pids[args["username"]][1])
-                    messages = ""
-                    for r in logg.split("\n"):
-                        messages += "<p>" + r + "</p>"
-                    with open("login.html", "r") as file:
-                        self.wfile.write(file.read().format(messages,args["username"],"",box_buff[args["username"]]).encode("utf-8"))
+                logg = getlog(pids[args["username"]][1])
+                messages = ""
+                for r in logg.split("\n"):
+                    messages += "<p>" + r + "</p>"
+                with open("login.html", "r") as file:
+                    self.wfile.write(file.read().format(messages,args["username"],"",box_buff[args["username"]]).encode("utf-8"))
             else:
                 self.showerror("Username Not Found")
         elif req_name == "updatedraft":
@@ -78,8 +78,8 @@ class TheServer(BaseHTTPRequestHandler):
                 self.showerror("Username or Draft Not Found")
         elif req_name == "command":
             if "username" in args.keys() and args["username"] in pids.keys() and "message" in args.keys() and "command" in args.keys():
-                msgbuffput("command", pids[args["username"]][0])
-                msgbuffput(args["command"]+" "+args["message"], pids[args["username"]][0])
+                msgbuffput("command".encode("utf-8"), pids[args["username"]][0])
+                msgbuffput((args["command"]+" "+args["message"]).encode("utf-8"), pids[args["username"]][0])
                 self.wfile.write(bytes("<script>location.href='/refresh?username="+args["username"]+"';</script>", "utf-8"))
             else:
                 self.showerror("Username or Command Not Found")

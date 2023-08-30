@@ -26,28 +26,42 @@ def create_client_chat_socket(ip):
 def receive(sock, lock, interl_id):
     global r_pid, en, log_r, inter_load
     local = threading.local()
-    while lock.locked():
-        pass
-    lock.acquire()
-    local.log = log_r
-    lock.release()
+    local.log = {"pub":""}
+    local.cur = "pub"
+    local.view = "pub"
+    local.load_cur = False
+    local.load_view = False
     while True:
         local.data, local.addr = sock.recvfrom(2000)
         local.msg = local.data.decode('utf-8')
-        local.log += local.msg + "\n"
-        while lock.locked():
-            pass
-        lock.acquire()
-        log_r = local.log
-        r_pid = interl_id
-        inter_load = False
-        en = True
-        while en:
-            pass
-        lock.release() # Ovde je da se ne bi desilo vise pristupa flag-ovima. 
+        print("received:",local.msg)
+        if local.load_cur:
+            local.load_cur = False
+            local.cur = local.msg
+            if not(local.cur in local.log.keys()):
+                local.log[local.cur] = ""
+        elif local.msg == "chat":
+            local.load_cur = True
+        elif local.load_view:
+            local.load_view = False
+            local.view = local.msg
+        elif local.msg == "view":
+            local.load_view = True
+        else:
+            local.log[local.cur] += local.msg + "\n"
+            while lock.locked():
+                pass
+            lock.acquire()
+            log_r = local.log[local.view]
+            r_pid = interl_id
+            inter_load = True
+            en = True
+            while en:
+                pass
+            lock.release() # Ovde je da se ne bi desilo vise pristupa flag-ovima. 
 
 def interl():
-    global en, r_id, inter_load
+    global en, log_r, r_pid, inter_load
     local = threading.local()
     local.log = ""
     while True:
@@ -62,6 +76,7 @@ def interl():
 def send(ip, port, name, sock):
     global en, r_pid, mbuff_s
     local = threading.local()
+    sock.sendto(name.encode('utf-8'), (ip, port))
     sock.sendto(f"{name} has joined the chat!".encode('utf-8'), (ip, port))
     while True:
         local.msg = None
@@ -69,7 +84,7 @@ def send(ip, port, name, sock):
             pass
         local.msg = mbuff_s
         en = False
-        sock.sendto(f"[{name}]: {local.msg}".encode('utf-8'), (ip, port))
+        sock.sendto(local.msg, (ip, port))
 
 def main(server_ip, server_port, name):
     sock = create_client_chat_socket(server_ip)
@@ -84,7 +99,7 @@ def main(server_ip, server_port, name):
     return sen_th.ident,rec_th.ident
 
 def getlog(r):
-    global en, r_pid
+    global en, r_pid, log_r
     while lock.locked():
         pass
     lock.acquire()
